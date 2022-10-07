@@ -1,0 +1,152 @@
+.board {
+  margin: 0;
+  padding: 0;
+}
+
+.canvas {
+  visibility: hidden;
+  width: 100vw;
+  height: 100vh;
+  overflow: scroll;
+  background-color: #292929;
+  box-shadow: inset 0 0 150px 0 #1d1d1d;
+  cursor: cell;
+}
+
+.canvas.grabbing {
+  cursor: grabbing;
+}
+
+.canvas.disabled {
+  cursor: not-allowed;
+}
+
+.color-picker {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  background-color: #121212;
+  border-radius: 12px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
+  visibility: hidden;
+  position: absolute;
+  width: fit-content;
+  padding: 16px;
+  z-index: 200;
+  gap: 16px;
+  color: #eaeaea;
+  font-size: 12px;
+}
+
+.closer {
+  height: 18px;
+  width: 18px;
+  background-color: #ff4181;
+  color: #202020;
+  padding: 12px;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-self: flex-end;
+}
+
+.title {
+  margin-top: 12px;
+  margin-bottom: -12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.cancel {
+  background-color: #ff4181;
+}
+
+.submit {
+  background-color: #bb86fc;
+}
+
+.info-box {
+  width: 100%;
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  color: white;
+  gap: 24px;
+  bottom: 0;
+  left: 0;
+  padding: 12px;
+  background-color: #121212;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.timer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #343434;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 42px;
+}
+
+.paints--warning {
+  color: #ff4181;
+  animation: warning 1s infinite;
+}
+
+@keyframes warning {
+  0% {
+    color: #ff4181;
+  }
+  50% {
+    color: #121212;
+  }
+  100% {
+    color: #ff4181;
+  }
+}
+
+.selected-cell {
+  background-color: #1d1d1d;
+  border-radius: 6px;
+  text-align: left;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.selected-cell td:nth-child(1) {
+  color: #bb86fc;
+  text-transform: uppercase;
+}
+
+.flexbox-fix input {
+  color: #e5e5e5 !important;
+  background-color: #121212;
+  outline: #121212;
+}
+
+.name-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  height: 100vh;
+  width: 100vw;
+  background-color: #121212;
+}
