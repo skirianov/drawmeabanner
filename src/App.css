@@ -13,6 +13,20 @@
   cursor: cell;
 }
 
+#canvas {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background-color: #292929;
+  box-shadow: inset 0 0 150px 0 #1d1d1d;
+  cursor: cell;
+}
+
+#canvas-el {
+  position: absolute;
+  image-rendering: pixelated;
+}
+
 .canvas.grabbing {
   cursor: grabbing;
 }
@@ -22,13 +36,12 @@
 }
 
 .color-picker {
-  display: flex;
+  display: none;
   flex-direction: column;
   text-align: left;
   background-color: #121212;
   border-radius: 12px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
-  visibility: hidden;
   position: absolute;
   width: fit-content;
   padding: 16px;

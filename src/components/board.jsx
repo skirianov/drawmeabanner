@@ -3,35 +3,22 @@ import svgPanZoom from "svg-pan-zoom";
 import { ColorPicker } from "./color-picker";
 import { Cell } from "./cell";
 import { InfoBox } from "./info-box";
+import { Canvas } from "./canvas";
 
 const BASIC_URL = 'http://localhost:3000';
 
-let WIDTH = 1500;
-let HEIGHT = 500;
-
-let sqWidth = 12;
-let sqHeight = 12;
-
 export const MAX_PAINTS = 3;
 
-// const coordinateData = new Map();
-
-// for (var i = 0; i <= WIDTH; i += sqWidth) {
-//   for (var j = 0; j <= HEIGHT; j += sqHeight) {
-//     var arr = { x: i, y: j, id:`${i},${j}`, color: 'white', old_color: 'white', status: 'unpainted', owner: '' };
-
-//     coordinateData.set(`${i},${j}`, arr);
-//   }
-// }
-
 export const Board = ({ name }) => {
-  const [coordinates, setCoordinates] = useState(new Map());
+  const [coordinates, setCoordinates] = useState(null);
   const [color, setColor] = useState("#fff");
   const [selectedCell, setSelectedCell] = useState(null);
   const [allowSelection, setAllowSelection] = useState(false);
   const [canvasClass, setCanvasClass] = useState("");
   const [paints, setPaints] = useState(MAX_PAINTS);
   const [isShowingPicker, setIsShowingPicker] = useState(false);
+  const [canvasX, setCanvasX] = useState(0);
+  const [canvasY, setCanvasY] = useState(0);
   const [stupidUserCounter, setStupidUserCounter] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -40,14 +27,16 @@ export const Board = ({ name }) => {
 
   useEffect(() => {
     const newCoordinates = new Map();
-    setIsLoading(true);
+    // setIsLoading(true);
     try {
       getAllSquares().then((squares) => {
         squares.forEach((coordinate) => {
           newCoordinates.set(coordinate.id, coordinate);
         });
-        setIsLoading(false);
+        // setIsLoading(false);
         setCoordinates(newCoordinates);
+
+        console.log(newCoordinates)
       });
 
     } catch (e) {
@@ -55,39 +44,6 @@ export const Board = ({ name }) => {
       console.log(e);
     }
   }, []);
-
-  useEffect(() => {
-    if (!isLoading) {
-      const svg = document.querySelector(".canvas");
-      svg.style.visibility = "visible";
-
-      svgPanZoom(".canvas", {
-        zoomEnabled: true,
-        center: true,
-        zoomScaleSensitivity: 0.2,
-        minZoom: 0.5,
-        maxZoom: 3,
-        controlIconsEnabled: false,
-        beforePan: () => {
-          setAllowSelection(false);
-        },
-        onPan: () => {
-          setAllowSelection(false);
-          setCanvasClass('grabbing');
-          setIsShowingPicker(false);
-  
-          if (!isShowingPicker) closeColorPicker();
-        },
-        onUpdatedCTM: () => {
-          setTimeout(() => {
-            setAllowSelection(true);
-            setCanvasClass('');
-            setIsShowingPicker(true);
-          }, 400)
-        }
-      });
-    }
-  }, [isLoading]);
 
   const getAllSquares = async () => {
     const res = await fetch(`${BASIC_URL}/squares`);
@@ -125,7 +81,7 @@ export const Board = ({ name }) => {
     }
   }
 
-  const handleCellClick = (id) => {
+  const handleCellClick = (cell, event) => {
     if (selectedCell) {
       closeColorPicker();
     }
@@ -175,10 +131,9 @@ export const Board = ({ name }) => {
       setCanvasClass('');
     }
 
-    const willBeSelectedCell = coordinates.get(id);
-    willBeSelectedCell.color = color;
+    cell.color = color;
 
-    setSelectedCell(willBeSelectedCell);
+    setSelectedCell(cell);
     let top = event.clientY - 50;
     let left = event.clientX + 50;
 
@@ -192,7 +147,7 @@ export const Board = ({ name }) => {
       left = left - 400;
     }
 
-    colorPickerRef.current.style = `visibility: visible; top: ${top}px; left: ${left}px;`;
+    colorPickerRef.current.style = `display: flex; visibility: visible; top: ${top}px; left: ${left}px;`;
   }
 
   const handlePaintSubmit = () => {
@@ -218,21 +173,7 @@ export const Board = ({ name }) => {
       ) : (
         <>
         <div className="board">
-        <svg width={WIDTH} height={HEIGHT} className={`canvas ${canvasClass}`}>
-          <text>
-            <tspan x="39%" y="-5%" textAnchor="middle" alignmentBaseline="middle" fontSize="60px" fill="#bb86fc">DRAW MY TWITTER BANNER 🥹</tspan>
-          </text>
-          {Array.from(coordinates.values()).map((coordinate, i) => (
-            <Cell
-              key={i}
-              width={sqWidth}
-              height={sqHeight}
-              coordinate={coordinate}
-              onClick={handleCellClick}
-              isSelected={selectedCell && selectedCell.id === coordinate.id}
-              allowSelection={allowSelection}
-            />))}
-        </svg>
+          {coordinates && <Canvas coordinates={coordinates} handleCellClick={handleCellClick} closeColorPicker={closeColorPicker} selectedCell={selectedCell} setSelectedCell={setSelectedCell} />}
       </div>
       <ColorPicker
         selectedCell={selectedCell}
