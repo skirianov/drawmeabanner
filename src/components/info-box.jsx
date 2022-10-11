@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { MAX_PAINTS } from "./board";
 
 const TIMER = {
-  minutes: 3,
-  seconds: 0,
+  minutes: 0,
+  seconds: 30,
 }
 
 export const InfoBox = ({ paints, setPaints, setCanvasClass, paintsRef, setStupidUserCounter }) => {

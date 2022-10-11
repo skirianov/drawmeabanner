@@ -13,7 +13,7 @@ import { About } from "./about";
 const BASIC_URL = 'https://www.drawmeabanner.lol';
 const WS_URL = 'wss://www.drawmeabanner.lol';
 
-export const MAX_PAINTS = 5;
+export const MAX_PAINTS = 20;
 
 export const Board = ({ name }) => {
   const [coordinates, setCoordinates] = useState(null);
@@ -75,6 +75,8 @@ export const Board = ({ name }) => {
     if (!selectedCell) return;
 
     const copiedCoordinates = new Map(coordinates);
+
+    console.log(selectedCell)
 
     if (selectedCell.status === 'unpainted') {
       copiedCoordinates.set(selectedCell.id, { ...selectedCell, color: selectedCell.old_color });
