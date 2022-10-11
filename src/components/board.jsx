@@ -11,7 +11,7 @@ import { convertArrayToMap } from "../utils/coordinates";
 import { About } from "./about";
 
 const BASIC_URL = 'https://www.drawmeabanner.lol';
-const WS_URL = 'ws://www.drawmeabanner.lol';
+const WS_URL = 'wss://www.drawmeabanner.lol';
 
 export const MAX_PAINTS = 5;
 
