@@ -1,13 +1,19 @@
 import { useEffect, useRef, useState } from "react";
+import useWebSocket, { ReadyState } from 'react-use-websocket';
 import svgPanZoom from "svg-pan-zoom";
+import { FaInfoCircle } from "react-icons/fa";
+
 import { ColorPicker } from "./color-picker";
 import { Cell } from "./cell";
 import { InfoBox } from "./info-box";
 import { Canvas } from "./canvas";
+import { convertArrayToMap } from "../utils/coordinates";
+import { About } from "./about";
 
-const BASIC_URL = 'http://localhost:3000';
+const BASIC_URL = 'https://www.drawmeabanner.lol';
+const WS_URL = 'ws://www.drawmeabanner.lol';
 
-export const MAX_PAINTS = 3;
+export const MAX_PAINTS = 5;
 
 export const Board = ({ name }) => {
   const [coordinates, setCoordinates] = useState(null);
@@ -21,22 +27,20 @@ export const Board = ({ name }) => {
   const [canvasY, setCanvasY] = useState(0);
   const [stupidUserCounter, setStupidUserCounter] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [messageHistory, setMessageHistory] = useState([]);
+  const [showAbout, setShowAbout] = useState(false);
+  const [webSocketData, setWebSocketData] = useState(null);
 
   const colorPickerRef = useRef(null);
   const paintsRef = useRef(null);
 
   useEffect(() => {
     const newCoordinates = new Map();
-    // setIsLoading(true);
     try {
       getAllSquares().then((squares) => {
-        squares.forEach((coordinate) => {
-          newCoordinates.set(coordinate.id, coordinate);
-        });
-        // setIsLoading(false);
-        setCoordinates(newCoordinates);
+        const newCoordinatesMap = convertArrayToMap(squares);
 
-        console.log(newCoordinates)
+        setCoordinates(newCoordinatesMap);
       });
 
     } catch (e) {
@@ -50,6 +54,19 @@ export const Board = ({ name }) => {
     const squares = await res.json();
 
     return squares;
+  }
+
+  const submitCell = async (id, cell) => {
+    const res = await fetch(`${BASIC_URL}/squares/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(cell),
+    });
+    const data = await res.json();
+
+    return data;
   }
 
   const closeColorPicker = () => {
@@ -125,10 +142,7 @@ export const Board = ({ name }) => {
 
     if (paints === 0) {
       setStupidUserCounter(stupidUserCounter + 1);
-      setCanvasClass('disabled');
       return;
-    } else {
-      setCanvasClass('');
     }
 
     cell.color = color;
@@ -150,30 +164,55 @@ export const Board = ({ name }) => {
     colorPickerRef.current.style = `display: flex; visibility: visible; top: ${top}px; left: ${left}px;`;
   }
 
-  const handlePaintSubmit = () => {
+  const handlePaintSubmit = async () => {
     if (paints > 0) {
       setPaints(paints - 1);
       closeColorPicker();
     }
 
     const copiedCoordinates = new Map(coordinates);
+    const updatedCell = { ...selectedCell, status: 'unpainted', color: color, old_color: color, owner: name }
 
-    copiedCoordinates.set(selectedCell.id, { ...selectedCell, status: 'unpainted', color: color, old_color: color, owner: name });
+    copiedCoordinates.set(selectedCell.id, updatedCell);
 
     setCoordinates(copiedCoordinates);
     setSelectedCell(null);
+
+    await submitCell(selectedCell.id, updatedCell)
   }
+
+  const { lastMessage, } = useWebSocket(WS_URL, {
+    onOpen: () => console.log('opened'),
+    onMessage: (message) => {
+      const parsedMessage = JSON.parse(message.data);
+
+      const newCoordinatesMap = convertArrayToMap(parsedMessage);
+
+      setWebSocketData(newCoordinatesMap);
+
+      if (messageHistory.length % 10 === 0) {
+        setCoordinates(newCoordinatesMap);
+      }
+    },
+    shouldReconnect: (closeEvent) => true,
+  });
+
+  useEffect(() => {
+    if (lastMessage !== null) {
+      setMessageHistory((prev) => prev.concat(lastMessage));
+    }
+  }, [lastMessage, setMessageHistory]);
 
   return (
     <div className="container">
-      {isLoading ? (
-        <div>
-          <h1>Loading...</h1>
+      <div className="greeting">
+        <p>Draw my Twitter banner</p>
+        <div className="info-icon" onClick={() => setShowAbout(!showAbout)}>
+          <FaInfoCircle />
         </div>
-      ) : (
-        <>
-        <div className="board">
-          {coordinates && <Canvas coordinates={coordinates} handleCellClick={handleCellClick} closeColorPicker={closeColorPicker} selectedCell={selectedCell} setSelectedCell={setSelectedCell} />}
+      </div>
+      <div className="board">
+        {coordinates && <Canvas coordinates={coordinates} handleCellClick={handleCellClick} closeColorPicker={closeColorPicker} canvasClass={canvasClass} />}
       </div>
       <ColorPicker
         selectedCell={selectedCell}
@@ -185,8 +224,40 @@ export const Board = ({ name }) => {
         handlePaintSubmit={handlePaintSubmit}
       />
       <InfoBox paints={paints} setPaints={setPaints} setCanvasClass={setCanvasClass} paintsRef={paintsRef} setStupidUserCounter={setStupidUserCounter} />
-      </>
-      )}
+      <About showAbout={showAbout} setShowAbout={setShowAbout} />
     </div>
   )
 }
+
+// running well
+// const startPerformanceTest = () => {
+//   let timer = 0;
+
+//   setInterval(() => {
+//     const ids = ['0,0', '0,12', '0,24', '0, 36', 
+//       '12,0', '12,12', '12,24', '12,36',
+//       '24,0', '24,12', '24,24', '24,36',
+//       '36,0', '36,12', '36,24', '36,36'];
+
+//     const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#000000', '#FFFFFF'];
+
+//     const randomId = ids[Math.floor(Math.random() * ids.length)];
+
+//     fetch(`${BASIC_URL}/squares/${randomId}`, {
+//       method: "PUT",
+//       headers: {
+//         "Content-Type": "application/json",
+//         },
+//       body: JSON.stringify({
+//         ...coordinates.get(randomId),
+//         color: colors[Math.floor(Math.random() * colors.length)],
+//       }),
+//     });
+
+//     timer += 1;
+//   }, 100);
+
+//   if (timer === 100) {
+//     clearInterval();
+//   }
+// }

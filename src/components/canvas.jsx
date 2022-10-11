@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 const WIDTH = 1500;
-const HEIGHT = 500;
+const HEIGHT = 504;
 
 const rectWidth = 12;
 const rectHeight = 12;
@@ -16,7 +16,7 @@ let isDragging = false;
 let canvasX;
 let canvasY;
 
-export const Canvas = ({ coordinates, handleCellClick, closeColorPicker }) => {
+export const Canvas = ({ coordinates, handleCellClick, closeColorPicker, canvasClass }) => {
   const [allowClick, setAllowClick] = useState(false);
   const canvasContainerRef = useRef(null);
   const canvasRef = useRef(null);
@@ -24,6 +24,9 @@ export const Canvas = ({ coordinates, handleCellClick, closeColorPicker }) => {
   useEffect(() => {
     const canvas = redraw();
     const canvasContainer = canvasContainerRef.current;
+
+    canvas.style.left = window.innerWidth / 2 - WIDTH / 2 + 'px';
+    canvas.style.top = window.innerHeight / 2 - HEIGHT / 2 + 'px';
 
     canvas.addEventListener('mousedown', start_drag);
     canvasContainer.addEventListener('mousemove', while_drag);
@@ -36,12 +39,6 @@ export const Canvas = ({ coordinates, handleCellClick, closeColorPicker }) => {
   }, [coordinates]);
 
   const zoomFunc = (e) => {
-    clearTimeout(zoomingTimer);
-
-    zoomingTimer = setTimeout(() => {
-      redraw();
-    }, 200);
-
     if (event.deltaY > 0) {
       zoom += SCROLL_SENSITIVITY;
 
@@ -63,15 +60,15 @@ export const Canvas = ({ coordinates, handleCellClick, closeColorPicker }) => {
   }
 
   const redraw = () => {
+    const coordinatesArray = Array.from(coordinates.values());
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
 
-    ctx.clearRect(0, 0, WIDTH * zoom, HEIGHT * zoom);
-    coordinates.forEach((coordinate, i) => {
+    coordinatesArray.forEach((coordinate, i) => {
       ctx.fillStyle = coordinate.color;
-      ctx.lineWidth = 0.2;
-      // ctx.strokeRect(coordinate.x, coordinate.y, rectWidth * zoom, rectHeight * zoom);
+      
       ctx.fillRect(coordinate.x, coordinate.y, rectWidth * zoom, rectHeight * zoom);
+      ctx.restore();
     });
 
     return canvas;
@@ -87,6 +84,7 @@ export const Canvas = ({ coordinates, handleCellClick, closeColorPicker }) => {
 
   const stop_drag = () => {
     isDragging = false;
+    canvasContainerRef.current.classList = "";
   }
 
   const while_drag = () => {
@@ -95,6 +93,7 @@ export const Canvas = ({ coordinates, handleCellClick, closeColorPicker }) => {
       let x_cursor = window.event.clientX;
       let y_cursor = window.event.clientY;
       if (canvasRef.current !== null) {
+        canvasContainerRef.current.classList = "grabbing";
         canvasRef.current.style.left = (x_cursor - canvasX) + 'px';
         canvasRef.current.style.top = (y_cursor - canvasY) + 'px';
       }

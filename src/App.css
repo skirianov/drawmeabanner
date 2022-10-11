@@ -3,16 +3,6 @@
   padding: 0;
 }
 
-.canvas {
-  visibility: hidden;
-  width: 100vw;
-  height: 100vh;
-  overflow: scroll;
-  background-color: #292929;
-  box-shadow: inset 0 0 150px 0 #1d1d1d;
-  cursor: cell;
-}
-
 #canvas {
   position: relative;
   width: 100vw;
@@ -24,14 +14,19 @@
 
 #canvas-el {
   position: absolute;
-  image-rendering: pixelated;
+  image-rendering: optimizeSpeed;             /* Older versions of FF          */
+  image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
+  image-rendering: -webkit-optimize-contrast; /* Safari                        */
+  image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
+  image-rendering: pixelated;                 /* Awesome future-browsers       */
+  -ms-interpolation-mode: nearest-neighbor;   /* IE                            */
 }
 
-.canvas.grabbing {
+#canvas.grabbing {
   cursor: grabbing;
 }
 
-.canvas.disabled {
+#canvas.disabled {
   cursor: not-allowed;
 }
 
@@ -94,7 +89,7 @@
   gap: 24px;
   bottom: 0;
   left: 0;
-  padding: 12px;
+  padding: 12px 24px;
   background-color: #121212;
   font-size: 20px;
   text-transform: uppercase;
@@ -162,4 +157,54 @@
   height: 100vh;
   width: 100vw;
   background-color: #121212;
+}
+
+.info-icon {
+  cursor: pointer;
+}
+
+.info-icon:hover {
+  transform: scale(1.1);
+}
+
+.greeting {
+  width: 98vw;
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  top: 0;
+  left: 0;
+  background-color: #121212;
+  z-index: 100;
+  font-size: 24px;
+  padding: 12px 24px;
+  text-transform: uppercase;
+}
+
+.about {
+  position: absolute;
+  display: none;
+  top: 50px;
+  width: 250px;
+  height: 84vh;
+  background-color: #121212;
+  padding: 22px 12px;
+  color: white;
+  font-size: 14px;
+}
+
+.about.slideIn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: left;
+  gap: 8px;
+  right: 0;
+}
+
+.about-btn {
+  align-self: center;
 }
